@@ -3,3 +3,6 @@
 .DS_Store
 *.safetensors
 *.pkl
+
+ASC_dataset_v3_augmented/*
+ASC_dataset_v3_augmented_patchified/*

@@ -1,0 +1,10 @@
+{
+  "model_name": "facebook/deit-small-patch16-224",
+  "best_checkpoint": "checkpoint-606",
+  "best_checkpoint_path": "mil_vit_results/checkpoint-606",
+  "weights_file": "mil_vit_results/checkpoint-606/model.safetensors",
+  "chunk_size": 256,
+  "n_test_pages": 25,
+  "full_bag_test_accuracy": 0.8,
+  "full_bag_test_loss": 0.7663456766407971
+}

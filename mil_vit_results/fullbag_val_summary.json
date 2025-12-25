@@ -1,0 +1,48 @@
+{
+  "model_name": "facebook/deit-small-patch16-224",
+  "chunk_size": 256,
+  "n_val_pages": 16,
+  "selection_rule": "max accuracy; tie (\u00b1EPS) -> min loss",
+  "eps": 1e-06,
+  "per_checkpoint": {
+    "checkpoint-101": {
+      "step": 101,
+      "accuracy": 0.5625,
+      "loss": 0.5875235224024251,
+      "weights_path": "mil_vit_results/checkpoint-101/model.safetensors"
+    },
+    "checkpoint-202": {
+      "step": 202,
+      "accuracy": 0.9375,
+      "loss": 0.2907698569815772,
+      "weights_path": "mil_vit_results/checkpoint-202/model.safetensors"
+    },
+    "checkpoint-303": {
+      "step": 303,
+      "accuracy": 0.75,
+      "loss": 0.875499660621501,
+      "weights_path": "mil_vit_results/checkpoint-303/model.safetensors"
+    },
+    "checkpoint-404": {
+      "step": 404,
+      "accuracy": 0.8125,
+      "loss": 0.3744950961169711,
+      "weights_path": "mil_vit_results/checkpoint-404/model.safetensors"
+    },
+    "checkpoint-505": {
+      "step": 505,
+      "accuracy": 0.8125,
+      "loss": 0.2874878215761812,
+      "weights_path": "mil_vit_results/checkpoint-505/model.safetensors"
+    },
+    "checkpoint-606": {
+      "step": 606,
+      "accuracy": 0.9375,
+      "loss": 0.21226327695877747,
+      "weights_path": "mil_vit_results/checkpoint-606/model.safetensors"
+    }
+  },
+  "best_checkpoint": "checkpoint-606",
+  "best_fullbag_val_accuracy": 0.9375,
+  "best_fullbag_val_loss": 0.21226327695877747
+}

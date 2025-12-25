@@ -1,0 +1,13 @@
+{
+  "region_key": "009_000_00",
+  "true_label": 0,
+  "logits": [
+    4.141453266143799,
+    -4.68756103515625
+  ],
+  "predicted_class": 0,
+  "num_patches": 117,
+  "region_image_path": "ASC_dataset_v3/test/french/009_000_00.jpg",
+  "downsample": 4,
+  "patch_size": 224
+}
