@@ -3,6 +3,11 @@
 .DS_Store
 *.safetensors
 *.pkl
+*.out
+*.err
 
-ASC_dataset_v3_augmented/*
-ASC_dataset_v3_augmented_patchified/*
+# raw CLaMM data (not versioned)
+ICDAR2017_CLaMM_*/
+__pycache__/
+.ipynb_checkpoints/
+.vscode/

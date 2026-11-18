@@ -1,19 +1,19 @@
 """augment_dataset.py
 
-Offline pipeline that — **for each text region** —
-1. computes four mask‑based augmented variants **and** keeps the original;  
-2. writes  the variants to disk using the naming convention:
-    {text_region_stem}_{variant}.png
+Offline pipeline that, for each page image:
+1. computes four mask-based augmented variants and keeps the original;
+2. writes all outputs as JPG files into a sibling augmented directory.
 
+By default the script augments both:
+- ICDAR2017_CLaMM_Training -> ICDAR2017_CLaMM_Training_augmented
+- ICDAR2017_CLaMM_evaluation_set -> ICDAR2017_CLaMM_evaluation_set_augmented
 """
 
 from pathlib import Path
 import sys
-import os
 import numpy as np
 import cv2
 from skimage.measure import label, regionprops
-import shutil
 
 # add external library path
 sys.path.append("/content/drive/MyDrive/Colab Notebooks/icdar_fest_14_02_2025")
@@ -59,6 +59,7 @@ def filter_regions(image, scale, eta, thetas):
 THETAS     = [0, 90]
 SCALE      = 1
 ETA_FACTOR = 1
+MIN_TEXT_HEIGHT = 1
 
 # suffixes for augmented variants (empty string → original)
 VARIANTS = {
@@ -69,6 +70,10 @@ VARIANTS = {
 }
 
 IMG_EXTS = {".png", ".jpg", ".jpeg", ".tif", ".tiff"}
+DATASET_PAIRS = (
+    ("ICDAR2017_CLaMM_Training", "ICDAR2017_CLaMM_Training_augmented"),
+    ("ICDAR2017_CLaMM_evaluation_set", "ICDAR2017_CLaMM_evaluation_set_augmented"),
+)
 
 # ──-------------------------------------------------------------------------
 # 🚀  Helpers
@@ -79,43 +84,39 @@ def process_page(img_path: Path, dataset_dir: Path, aug_dataset_dir: Path):
     """
     Mirrors the folder structure of dataset_dir inside aug_dataset_dir.
     Saves:
-        - the original image (copied)
+        - the original image (saved as JPG)
         - all augmented variants
     """
 
     # ---------------------------------------------------------
-    # 1. Compute relative path, e.g. split/script_mode/filename
+    # 1. Build output directory
     # ---------------------------------------------------------
-    rel_path = img_path.relative_to(dataset_dir)
-    split = rel_path.parts[0]
-    script_mode = rel_path.parts[1]
-    filename = rel_path.name
-
-    # ---------------------------------------------------------
-    # 2. Build output directory
-    # ---------------------------------------------------------
-    out_dir = aug_dataset_dir / split / script_mode
+    out_dir = aug_dataset_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # ---------------------------------------------------------
-    # 3. Copy the original image to the aug dataset directory
-    # ---------------------------------------------------------
-    dst_original = out_dir / filename
-    shutil.copy2(img_path, dst_original)
-
-    # ---------------------------------------------------------
-    # 4. Load & preprocess
+    # 2. Load & preprocess
     # ---------------------------------------------------------
     gray, bin_img, inv_bin = load_and_preprocess_image(str(img_path))
 
+    # ---------------------------------------------------------
+    # 3. Save the original image as JPG in the aug dataset directory
+    # ---------------------------------------------------------
+    dst_original = out_dir / f"{img_path.stem}.jpg"
+    cv2.imwrite(str(dst_original), gray)
+
     ths_low  = bin_img.shape[0] * 0.001
     ths_high = bin_img.shape[0] * 0.1
-    avr_h    = estimate_binary_height(inv_bin, ths_low, ths_high)[0]
+    height_range = estimate_binary_height(inv_bin, ths_low, ths_high)
+    if height_range is None:
+        raise ValueError("Could not estimate binary height from connected components")
+
+    avr_h = max(MIN_TEXT_HEIGHT, height_range[0])
     eta      = ETA_FACTOR * avr_h
     bg_mask  = (filter_regions(bin_img, SCALE, eta, THETAS) < 0.99).astype(np.uint8) * 255
 
     # ---------------------------------------------------------
-    # 5. Generate & save each variant
+    # 4. Generate & save each variant
     # ---------------------------------------------------------
     for suffix, fn in VARIANTS.items():
 
@@ -130,25 +131,24 @@ def process_page(img_path: Path, dataset_dir: Path, aug_dataset_dir: Path):
 # ────────────────────────────────────────────────────────────────────────────
 
 def augment_ds(ds_dir: Path, aug_ds_dir: Path):
-    for split in ("train", "val"):
-        for script_mode in ["french", "german"]:
-            images_dir = ds_dir / split / script_mode
-            if not images_dir.exists():
-                print(f"⏭  {images_dir} not found – skipping.")
-                continue
-            pages = [p for p in images_dir.rglob("*") if p.suffix.lower() in IMG_EXTS]
-            print(f"▶  {split:<10} / {script_mode:<10} | {len(pages):6d} pages")
+    if not ds_dir.exists():
+        print(f"⏭  {ds_dir} not found – skipping.")
+        return
+    print(f"Source: {ds_dir}")
+    print(f"Target: {aug_ds_dir}")
+    pages = [p for p in ds_dir.rglob("*") if p.suffix.lower() in IMG_EXTS]
+    print(f"▶   {len(pages):6d} pages")
 
-            for p in pages:
-                try:
-                    process_page(p, ds_dir, aug_ds_dir)
-                except Exception as e:
-                    print(f"[WARN] {p}: {e}")
+    for p in pages:
+        try:
+            process_page(p, ds_dir, aug_ds_dir)
+        except Exception as e:
+            print(f"[WARN] {p}: {e}")
 
 def main():
-    ds_dir = Path("ASC_dataset_v3")
-    aug_ds_dir = Path("ASC_dataset_v3_augmented")
-    augment_ds(ds_dir, aug_ds_dir)
+    for ds_name, aug_name in DATASET_PAIRS:
+        augment_ds(Path(ds_name), Path(aug_name))
+        print()
 
 
 if __name__ == "__main__":

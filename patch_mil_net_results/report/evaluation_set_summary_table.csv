@@ -1,0 +1,2 @@
+eval_split,backbone_name,n_eval_pages,loss,accuracy,balanced_accuracy,macro_precision,macro_recall,macro_f1
+Evaluation set,resnet34,1999,0.8228923678888354,0.7553776888444222,0.7193012865098142,0.6986206373851195,0.7193012865098142,0.6938514791037226

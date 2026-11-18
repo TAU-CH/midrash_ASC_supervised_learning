@@ -11,6 +11,18 @@ import ctypes as C
 
 # load in external library
 aglib = C.cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), "anigauss.so"))
+aglib.anigauss.argtypes = [
+    C.POINTER(C.c_double),
+    C.POINTER(C.c_double),
+    C.c_int,
+    C.c_int,
+    C.c_double,
+    C.c_double,
+    C.c_double,
+    C.c_int,
+    C.c_int,
+]
+aglib.anigauss.restype = None
 #aglib = C.cdll.LoadLibrary(os.path.join(os.getcwd(), "anigauss.so"))
 
 # inarr = input array
@@ -22,15 +34,37 @@ aglib = C.cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), "anigauss.so"
 # phi = orientation angle in degrees (from u to x)
 # (derv, deru) = for line and edge detection (default zero)
 def anigauss(inarr, sigv, sigu, phi=0., derv=0, deru=0):
-    
+    inarr = np.asarray(inarr)
+    if inarr.ndim != 2:
+        raise ValueError(f"anigauss expects a 2-D array, got shape {inarr.shape!r}")
+    if 0 in inarr.shape:
+        raise ValueError("anigauss input must be non-empty")
+
+    sigv = float(sigv)
+    sigu = float(sigu)
+    phi = float(phi)
+    derv = int(derv)
+    deru = int(deru)
+
+    if not np.isfinite(sigv) or sigv <= 0.0:
+        raise ValueError(f"sigv must be a finite positive number, got {sigv!r}")
+    if not np.isfinite(sigu) or sigu <= 0.0:
+        raise ValueError(f"sigu must be a finite positive number, got {sigu!r}")
+    if not np.isfinite(phi):
+        raise ValueError(f"phi must be finite, got {phi!r}")
+    if derv < 0 or deru < 0:
+        raise ValueError(
+            f"derivative orders must be non-negative, got derv={derv}, deru={deru}"
+        )
+
     # make sure we have a C-order array of doubles
-    if inarr.dtype is not np.double:
-        inarr = inarr.astype(np.double, order='C')
+    if inarr.dtype != np.float64:
+        inarr = inarr.astype(np.float64, order="C")
     elif not inarr.flags.c_contiguous:
         inarr = np.ascontiguousarray(inarr)
 
     # create output array
-    outarr = np.zeros_like(inarr, dtype=np.double)
+    outarr = np.zeros_like(inarr, dtype=np.float64)
 
     # size parameters for array
     (sizey, sizex) = inarr.shape

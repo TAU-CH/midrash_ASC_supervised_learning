@@ -1,0 +1,21 @@
+{
+  "best_model_checkpoint": "patch_mil_net_results/best_mil_patchnet.pth",
+  "best_metric_accuracy": 0.7553776888444222,
+  "best_metric_loss": 0.822406888659032,
+  "training_history_json": "patch_mil_net_results/training_history.json",
+  "eval_split": "Evaluation set",
+  "num_labels": 12,
+  "backbone_name": "resnet34",
+  "train_group_variants_into_bag": true,
+  "train_top_k_text_patches": 128,
+  "train_sample_from_top_text_patches": 192,
+  "eval_top_k_text_patches": 24,
+  "eval_sample_from_top_text_patches": null,
+  "train_variant_suffixes": [
+    "",
+    "_inverse",
+    "_masked_inv_gray",
+    "_inv_masked_gray",
+    "_inv_masked_bin"
+  ]
+}
